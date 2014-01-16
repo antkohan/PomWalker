@@ -16,7 +16,7 @@ import java.util.Calendar;
 public class ReadWriter {
 	
 	private String location;
-	private String outFile;
+        //private String outFile;
 	
 	public ReadWriter(String target) {
 		// TODO Auto-generated constructor stub
@@ -28,7 +28,16 @@ public class ReadWriter {
 		//location = target;
 		//outFile = outF;
 	//}
-
+    
+        public void clearFile(){
+	    try{
+		FileWriter f = new FileWriter(location, false);
+		f.close();
+	    } catch(IOException e){
+		e.printStackTrace();
+	    }
+        }
+    
 	public int countLine(){
 		int count = 0;
 		try (BufferedReader br = new BufferedReader(new FileReader(location)))
@@ -71,12 +80,11 @@ public class ReadWriter {
         try {
             //create a temporary file
             //String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-            File logFile = new File(location);
+            File outFile = new File(location);
 
             // This will output the full path where the file will be written to...
-            System.out.println(logFile.getCanonicalPath()+"-"+lineWrite);
-
-            writer = new BufferedWriter(new FileWriter(logFile, true));
+            System.out.print("Writing to: "+outFile.getCanonicalPath()+" Line: "+lineWrite);
+            writer = new BufferedWriter(new FileWriter(outFile, true));
             writer.write(lineWrite);
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,12 +102,12 @@ public class ReadWriter {
         try {
             //create a temporary file
             //String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-            File logFile = new File(artifact+"-"+location);
+            File outFile = new File(artifact+"-"+location);
 
             // This will output the full path where the file will be written to...
-            System.out.println(logFile.getCanonicalPath()+"-"+lineWrite);
+            System.out.println("Writing to: "+outFile.getCanonicalPath()+" Line: "+lineWrite);
 
-            writer = new BufferedWriter(new FileWriter(logFile, true));
+            writer = new BufferedWriter(new FileWriter(outFile, true));
             writer.write(lineWrite);
             writer.write("\n");
         } catch (Exception e) {

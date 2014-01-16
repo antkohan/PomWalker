@@ -36,14 +36,10 @@ public class FileScan{
                 	SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd"); 
                 	File jarF = new File(lookFile);
                 	//File jarF = new File(lookFile.replace(".pom", ".jar"));
-                	System.out.println(jarF.toString());
                 	Date d = new Date (jarF.lastModified());
-                	
                 	lookFile = lookFile.replace("\\","\\\\");
-                	System.out.println(sdf1.format(d)+","+lookFile );
-                	wr.write(sdf1.format(d)+","+lookFile);
-                	wr.write("\n");
-                	//write to file
+                	wr.write(sdf1.format(d)+","+lookFile+"\n");
+                     	//write to file
                 	
             	}
             }
