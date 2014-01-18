@@ -18,7 +18,7 @@ public class MainWalker {
 		//final String repo = "/opt/maven/";
 		//final String repo = "/opt/dmg/pom/";
 		//final String repo = "C:\\\\Users\\Raula\\Documents\\maven";
-		final String outF = "outputPom.csv";
+		final String outF = "output.txt";
 		
 		MainWalker pomWalk = new MainWalker();
 		ReadWriter rw = new ReadWriter(scanlog);

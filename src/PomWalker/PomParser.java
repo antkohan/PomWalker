@@ -4,10 +4,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Build;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -17,18 +19,18 @@ public class PomParser {
 	String modDate;
 	int skip;
 	int anaPOM;
-	
+	ReadWriter errlog = new ReadWriter("log.txt");
+
 	//get the POM file contents
 	@SuppressWarnings("finally")
 	public String walkParse(String log) {
-		ReadWriter errlog = new ReadWriter("log.txt");
-		String contents="";
-		//ReadWriter rw = new ReadWriter();
-		// Path to your local Maven repository
+	    String contents="";
+	    //ReadWriter rw = new ReadWriter();
+	    // Path to your local Maven repository
 		
 		String temp = log;
 		String path = log.substring(temp.indexOf(",")+1);
-		modDate=temp.substring(0,temp.indexOf(","));
+		modDate = temp.substring(0,temp.indexOf(","));
 		
 		//modDate = temp.substring(0, temp.indexOf(",")+1);
 		final File pomXmlFile = new File(path.trim());
@@ -73,14 +75,19 @@ public class PomParser {
             public String printInfo(Model m, String fp){
 		System.out.println("Extracting From: "+fp);
 		StringBuilder pomContents = new StringBuilder();
-		String artifact = m.getArtifactId().replace(";","<SEMI>");
-		String version = m.getVersion().replace(";","<SEMI>");
-		String groupId = m.getGroupId().replace(";","<SEMI>");
-		String description = m.getDescription().replace(";","<SEMI>");
+		Build b = m.getBuild();
+				
+		String artifact = getArtifactId(m);
+		String version = getVersion(m);
+		String groupId = getGroupId(m);
+		String description = getDescription(m);
+		String finalName = getFinalName(b);
+		
 		pomContents.append(
 				   artifact+";"+
 				   version+";"+
 				   groupId+";"+
+				   finalName+";"+
 				   description+"\n"
 				   );
 		return pomContents.toString();
@@ -226,6 +233,52 @@ public class PomParser {
 		String pContents = pomContents.toString();
 		return pContents;
 	}
+
+    private String getArtifactId(Model m){
+	try {
+	    return m.getArtifactId().replace(";","<SEMI>");
+	} catch (RuntimeException e){
+	    //Pom doesn't have the field so m.getArtifactId() throws a null pointer
+	    errlog.write("Error in m.getArtifactId(): "+e+"\n");
+	    return "<NONE>";
+	}
+    }
+    private String getVersion(Model m){
+	try {
+	    return m.getVersion().replace(";","<SEMI>");
+	} catch (RuntimeException e){
+	    //Pom doesn't have the field so m.getVersion() throws a null pointer
+	    errlog.write("Error in m.getVersion(): "+e+"\n");
+	    return "<NONE>";
+	}
+    }
+    private String getGroupId(Model m){
+	try {
+	    return m.getGroupId().replace(";","<SEMI>");
+	} catch (RuntimeException e){
+	    //Pom doesn't have the field so m.getGroupId() throws a null pointer
+	    errlog.write("Error in m.getGroupId(): "+e+"\n");
+	    return "<NONE>";
+	}
+    }
+    private String getDescription(Model m){
+	try {
+	    return m.getDescription().replace(";","<SEMI>");
+	} catch (RuntimeException e){
+	    //Pom doesn't have the field so m.getDescription() throws a null pointer
+	    errlog.write("Error in m.getDescription(): "+e+"\n");
+	    return "<NONE>";
+	}
+    }
+    private String getFinalName(Build b){
+	try {
+	    return b.getFinalName().replace(";","<SEMI>");
+	} catch (RuntimeException e){
+	    //Pom doesn't have the field so b.GetFinalName() throws a null pointer
+	    errlog.write("Error in b.getFinalName(): "+e+"\n");
+	    return "<NONE>";
+	}
+    }
 	
 	//public static void main(String[] args) {
         //PomParser fw = new PomParser();

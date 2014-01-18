@@ -40,8 +40,8 @@ public class ReadWriter {
     
 	public int countLine(){
 		int count = 0;
-		try (BufferedReader br = new BufferedReader(new FileReader(location)))
-		{
+		try {
+		BufferedReader br = new BufferedReader(new FileReader(location));
 	        String sCurrentLine;
 			while ((sCurrentLine = br.readLine()) != null) {
 				count++;
@@ -57,8 +57,9 @@ public class ReadWriter {
 	public String readAtLine(int line){
 		String sb = "null";
 		int countLine = 0;
-		try (BufferedReader br = new BufferedReader(new FileReader(location)))
+		try
 		{
+		BufferedReader br = new BufferedReader(new FileReader(location));
 	        String sCurrentLine;
 	        
 			while ((sCurrentLine = br.readLine()) != null) {
