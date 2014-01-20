@@ -20,6 +20,9 @@ public class MainWalker {
 		//final String repo = "C:\\\\Users\\Raula\\Documents\\maven";
 		final String outF = "output.txt";
 		
+		ReadWriter errlog = new ReadWriter("log.txt");
+		errlog.clearFile();
+
 		MainWalker pomWalk = new MainWalker();
 		ReadWriter rw = new ReadWriter(scanlog);
 		ReadWriter outFile = new ReadWriter(outF);

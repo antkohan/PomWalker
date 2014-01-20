@@ -67,15 +67,21 @@ public class PomParser {
        
     }
 
+    public String printJarInfo(Model m, String fp){
+	System.out.println("Extracting from jar: ");
+	StringBuilder jarInfo = new StringBuilder();
+	Build b = m.getBuild();
+	return "test";
+    }
+
     public String printInfo(Model m, String fp){
 	System.out.println("Extracting From: "+fp);
 	StringBuilder pomContents = new StringBuilder();
-	Build b = m.getBuild();
-	
-	String artifact = modelWrapper("getArtifactId", m);
-	String version = modelWrapper("getVersion", m);
-	String groupId = modelWrapper("getGroupId", m);
-	String description = modelWrapper("getDescription", m);
+
+	String artifact = modelGetterWrapper("getArtifactId", m);
+	String version = modelGetterWrapper("getVersion", m);
+	String groupId = modelGetterWrapper("getGroupId", m);
+	String description = modelGetterWrapper("getDescription", m);
 	
 	pomContents.append(artifact+";"+version+";"+groupId+";"+description+"\n");
 	return pomContents.toString();
@@ -198,19 +204,44 @@ public class PomParser {
 	return pContents;
     }
 
-    //Using reflection to wrap the model getter function so that they return a value instead
-    //of throwing a null pointer exception and ending the calling function prematurely
-    private String modelWrapper(String func, Model m){
+    //Wraps getter functions from maven's Model class to return the fields in a special format.
+    private String modelGetterWrapper(String func, Model m){
 	try {
 	    Method modelFunc = m.getClass().getMethod(func);
 	    Object value =  modelFunc.invoke(m);
 	    String field = (String)value;
 	    return field.replace(";","<SEMI>");
+	} catch (ReflectiveOperationException e) { 
+	    errlog.write("Error in using reflection in model wrapper on function "+func+": "+e+"\n");
+	    return "<NONE>";
+	} catch (NullPointerException e) {
+	    //Tried to use replace on a field that had no value. Will be common, so don't write to log
+	    return "<NONE>";
 	} catch (Exception e) {
 	    errlog.write("Error running model wrapper on function "+func+": "+e+"\n");
 	    return "<NONE>";
 	}
 
     }
-       
+
+    //Wraps getter functions from maven's Model class to return the fields in a special format.
+    private String buildGetterWrapper(String func, Build b){
+	try {
+	    Method modelFunc = b.getClass().getMethod(func);
+	    Object value =  modelFunc.invoke(b);
+	    String field = (String)value;
+	    return field.replace(";","<SEMI>");
+	} catch (ReflectiveOperationException e) { 
+	    errlog.write("Error in using reflection in model wrapper on function "+func+": "+e+"\n");
+	    return "<NONE>";
+	} catch (NullPointerException e) {
+	    //Tried to use replace on a field that had no value. Will be common, so don't write to log
+	    return "<NONE>";
+	} catch (Exception e) {
+	    errlog.write("Error running model wrapper on function "+func+": "+e+"\n");
+	    return "<NONE>";
+	}
+
+    }
+      
 }
