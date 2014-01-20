@@ -47,7 +47,7 @@ public class PomParser {
 		  }
 		*/
 			
-		contents = printInfo(model, path);
+		contents = printJarInfo(model, path);
                 
                 //contents = printDep(model, path, artifact, artVersion);
             } finally {
@@ -68,10 +68,17 @@ public class PomParser {
     }
 
     public String printJarInfo(Model m, String fp){
-	System.out.println("Extracting from jar: ");
+	//System.out.println("Extracting from jar: ");
 	StringBuilder jarInfo = new StringBuilder();
 	Build b = m.getBuild();
-	return "test";
+
+	String finalName = buildGetterWrapper("getFinalName", b);
+
+	if(finalName != "<NONE>"){
+	    System.out.println(finalName);
+	}
+
+	return finalName;
     }
 
     public String printInfo(Model m, String fp){
@@ -224,7 +231,7 @@ public class PomParser {
 
     }
 
-    //Wraps getter functions from maven's Model class to return the fields in a special format.
+    //Wraps getter functions from maven's Build class to return the fields in a special format.
     private String buildGetterWrapper(String func, Build b){
 	try {
 	    Method modelFunc = b.getClass().getMethod(func);

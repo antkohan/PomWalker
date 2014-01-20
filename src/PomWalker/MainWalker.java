@@ -52,7 +52,7 @@ public class MainWalker {
         	String data = pp.walkParse(rw.readAtLine(i));
 		if(data != ""){
 		    outFile.write(data);
-		    System.out.println("");    
+		    // System.out.println("");    
 		}
 		
 	}
