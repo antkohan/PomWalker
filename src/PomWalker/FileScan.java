@@ -1,61 +1,69 @@
 package PomWalker;
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 //This class is used to extract the POM files and locations within
-//
 public class FileScan{
 	
-	private String writeLocation;
-	
-	public FileScan(String target){
-		writeLocation = target;
-	}
+    private String indexPath;
 
-    public void walk( String path) {
-        ReadWriter wr = new ReadWriter(writeLocation);
+    public FileScan(String index){
+	indexPath = index;
+    }
+    
+    public void walkPoms(String path) {
+        ReadWriter wr = new ReadWriter(indexPath);
         
-    	File root = new File( path );
+    	File root = new File(path);
         File[] list = root.listFiles();
 
         if (list == null) return;
 
-        //lets see if we can list the files that have extension *.pom
-        for ( File f : list ) {
+	for ( File f : list ) {
             if ( f.isDirectory() ) {
-                walk( f.getAbsolutePath() );
-            }
-            else {
+                walkPoms( f.getAbsolutePath() );
+            } else {
             	
             	String lookFile = f.getAbsoluteFile().toString();
             	
-            	
             	if (getExtension(lookFile).equalsIgnoreCase("pom")){
-                	
-                	SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd"); 
-                	File jarF = new File(lookFile);
-                	//File jarF = new File(lookFile.replace(".pom", ".jar"));
-                	Date d = new Date (jarF.lastModified());
-                	lookFile = lookFile.replace("\\","\\\\");
-                	wr.write(sdf1.format(d)+","+lookFile+"\n");
-                     	//write to file
-                	
+		    File pomF = new File(lookFile);
+		    wr.write(pomF.getAbsolutePath()+"\n");
             	}
             }
         }
     }
     
+    public void walkPomsAndJars(String path) {
+        ReadWriter wr = new ReadWriter(indexPath);
+    
+    	File root = new File(path);
+        File[] list = root.listFiles();
+
+        if (list == null) return;
+
+	for ( File f : list ) {
+            if ( f.isDirectory() ) {
+                walkPomsAndJars( f.getAbsolutePath() );
+            } else {
+		String lookFile = f.getAbsoluteFile().toString();
+            	if (getExtension(lookFile).equalsIgnoreCase("pom")){
+		    File pomF = new File(lookFile);
+		    File jarF = new File(lookFile.replace(".pom", ".jar"));
+		    if (jarF.exists()) {
+			wr.write(pomF.getAbsolutePath()+","+jarF.getAbsolutePath()+"\n");
+		    } else {
+			wr.write(pomF.getAbsolutePath()+","+"<NOJAR>"+"\n");
+		    }	
+            	}
+            }
+        }
+    }
+
     protected String getExtension(String name) {
         String[] str = name.split("\\.");
         if(str.length > 1) {
             return str[str.length - 1];
         }
-        return ""; //-- no extension
+        return ""; 
     }
-
-    //public static void main(String[] args) {
-       // FileScan fw = new FileScan();
-        //fw.walk("C:\\Users\\Raula\\Documents\\maven" );
-    //}
 }

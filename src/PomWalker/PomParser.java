@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
@@ -24,13 +26,22 @@ public class PomParser {
     //get the POM file contents
     @SuppressWarnings("finally")
     public String walkParse(String log) {
-	String contents="";
-			
-	String temp = log;
-	String path = log.substring(temp.indexOf(",")+1);
-	modDate = temp.substring(0,temp.indexOf(","));
-		
-	final File pomXmlFile = new File(path.trim());
+	String contents = "";			
+	String pomPath = "";
+	String jarPath = "";
+
+	int commaPos = log.indexOf(",");
+	if (commaPos > 0) {
+	    pomPath = log.substring(0, commaPos);
+	    jarPath = log.substring(commaPos+1);
+	} else {
+	    pomPath = log;
+	}
+	
+	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	final File pomXmlFile = new File(pomPath.trim());
+	Date date = new Date(pomXmlFile.lastModified());
+	modDate = sdf.format(date);
 		
         try {
             final Reader reader = new FileReader(pomXmlFile);
@@ -41,25 +52,25 @@ public class PomParser {
          
 		/*
 		  if(model.getDependencyManagement()!=null){
-		  contents = printManagedModel(model, path);
+		  contents = printManagedModel(model, pomPath);
 		  }else{
-		  contents = printDepAll(model, path);
+		  contents = printDepAll(model, pomPath);
 		  }
 		*/
 			
-		contents = printJarInfo(model, path);
+		contents = printJarInfo(model, pomPath);
                 
-                //contents = printDep(model, path, artifact, artVersion);
+                //contents = printDep(model, pomPath, artifact, artVersion);
             } finally {
                 reader.close();
             }
         } catch (XmlPullParserException ex) {
-	    System.out.println("vvv ERROR vvv");
-	    errlog.write(path+","+ex+"\n\n");
+	    System.out.println("*** ERROR ***");
+	    errlog.write(pomPath+", "+ex+"\n\n");
 	    throw new RuntimeException("Error parsing POM!", ex);
         } catch (final IOException ex) {
-	    System.out.println("vvv ERROR vvv");
-	    errlog.write(path+","+ex+"\n\n");
+	    System.out.println("*** ERROR ***");
+	    errlog.write(pomPath+", "+ex+"\n\n");
 	    throw new RuntimeException("Error reading POM!", ex);
         } finally {
 	    return contents;
@@ -68,17 +79,13 @@ public class PomParser {
     }
 
     public String printJarInfo(Model m, String fp){
-	//System.out.println("Extracting from jar: ");
+	System.out.println("Extracting from jar: ");
 	StringBuilder jarInfo = new StringBuilder();
 	Build b = m.getBuild();
 
 	String finalName = buildGetterWrapper("getFinalName", b);
 
-	if(finalName != "<NONE>"){
-	    System.out.println(finalName);
-	}
-
-	return finalName;
+	return finalName+"\n";
     }
 
     public String printInfo(Model m, String fp){

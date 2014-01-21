@@ -84,7 +84,7 @@ public class ReadWriter {
             File outFile = new File(location);
 
             // This will output the full path where the file will be written to...
-	    // System.out.print("Writing to: "+outFile.getCanonicalPath()+" Line: "+lineWrite);
+	    System.out.print("Writing to: "+outFile.getCanonicalPath()+" Line: "+lineWrite);
             writer = new BufferedWriter(new FileWriter(outFile, true));
             writer.write(lineWrite);
         } catch (Exception e) {
