@@ -15,75 +15,60 @@ import java.util.Calendar;
  */
 public class ReadWriter {
 	
-	private String location;
-        //private String outFile;
+    private String location;
 	
-	public ReadWriter(String target) {
-		// TODO Auto-generated constructor stub
-		location = target;
-	}
-	
-	//public ReadWriter(String target, String outF) {
-		// TODO Auto-generated constructor stub
-		//location = target;
-		//outFile = outF;
-	//}
+    public ReadWriter(String target) {
+	location = target;
+    }
     
-        public void clearFile(){
-	    try{
-		FileWriter f = new FileWriter(location, false);
-		f.close();
-	    } catch(IOException e){
-		e.printStackTrace();
+    public void clearFile(){
+	try{
+	    FileWriter f = new FileWriter(location, false);
+	    f.close();
+	} catch(IOException e){
+	    e.printStackTrace();
+	}
+    }
+    
+    public int countLine(){
+	int count = 0;
+	try {
+	    BufferedReader br = new BufferedReader(new FileReader(location));
+	    String sCurrentLine;
+	    while ((sCurrentLine = br.readLine()) != null) {
+		count++;
 	    }
-        }
-    
-	public int countLine(){
-		int count = 0;
-		try {
-		BufferedReader br = new BufferedReader(new FileReader(location));
-	        String sCurrentLine;
-			while ((sCurrentLine = br.readLine()) != null) {
-				count++;
-			}
- 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-	
-		return count;
+	    br.close();
+ 	} catch (IOException e) {
+	    e.printStackTrace();
 	}
+ 	return count;
+    }
 	
-	public String readAtLine(int line){
-		String sb = "null";
-		int countLine = 0;
-		try
-		{
-		BufferedReader br = new BufferedReader(new FileReader(location));
-	        String sCurrentLine;
-	        
-			while ((sCurrentLine = br.readLine()) != null) {
-				countLine++;
-	            if (countLine == line){
-	            	sb = sCurrentLine;
-	            	break;
-	            }
-			}
- 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-	
-		return sb;
+    public String readAtLine(int line){
+	String sb = "null";
+	int countLine = 0;
+	try {
+	    BufferedReader br = new BufferedReader(new FileReader(location));
+	    String sCurrentLine;
+	    while ((sCurrentLine = br.readLine()) != null) {
+		countLine++;
+		if (countLine == line){
+		    sb = sCurrentLine;
+		    break;
+		}
+	    }
+	    br.close();
+ 	} catch (IOException e) {
+	    e.printStackTrace();
 	}
-	public void write(String lineWrite){
-		BufferedWriter writer = null;
-        try {
-            //create a temporary file
-            //String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-            File outFile = new File(location);
+	return sb;
+    }
 
-            // This will output the full path where the file will be written to...
+    public void write(String lineWrite){
+	BufferedWriter writer = null;
+        try {
+            File outFile = new File(location);
 	    System.out.print("Writing to: "+outFile.getCanonicalPath()+" Line: "+lineWrite);
             writer = new BufferedWriter(new FileWriter(outFile, true));
             writer.write(lineWrite);
@@ -96,16 +81,12 @@ public class ReadWriter {
             } catch (Exception e) {
             }
         }
-	}
+    }
 	
-	public void writeArti(String lineWrite, String artifact){
-		BufferedWriter writer = null;
+    public void writeArti(String lineWrite, String artifact){
+	BufferedWriter writer = null;
         try {
-            //create a temporary file
-            //String timeLog = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-            File outFile = new File(artifact+"-"+location);
-
-            // This will output the full path where the file will be written to...
+	    File outFile = new File(artifact+"-"+location);
             System.out.println("Writing to: "+outFile.getCanonicalPath()+" Line: "+lineWrite);
 
             writer = new BufferedWriter(new FileWriter(outFile, true));
@@ -120,6 +101,6 @@ public class ReadWriter {
             } catch (Exception e) {
             }
         }
-	}
+    }
 
 }
