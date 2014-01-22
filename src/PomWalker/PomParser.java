@@ -4,15 +4,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.DependencyManagement;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Parent;
+import org.apache.maven.model.*;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
@@ -27,16 +25,10 @@ public class PomParser {
     @SuppressWarnings("finally")
     public String walkParse(String log) {
 	String contents = "";			
-	String pomPath = "";
-	String jarPath = "";
-
-	int commaPos = log.indexOf(",");
-	if (commaPos > 0) {
-	    pomPath = log.substring(0, commaPos);
-	    jarPath = log.substring(commaPos+1);
-	} else {
-	    pomPath = log;
-	}
+		
+	//Remove the pom path from the list of paths. Now may only contain at most jar paths.
+	LinkedList<String> pathList = new LinkedList<String>(Arrays.asList(log.split(",")));
+	String pomPath = (pathList.size() > 0) ? pathList.remove(0) : "" ;
 	
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 	final File pomXmlFile = new File(pomPath.trim());
@@ -58,7 +50,7 @@ public class PomParser {
 		  }
 		*/
 			
-		contents = printJarInfo(model, pomPath);
+		contents = printJarInfo(model, pomPath, pathList);
                 
                 //contents = printDep(model, pomPath, artifact, artVersion);
             } finally {
@@ -78,18 +70,31 @@ public class PomParser {
        
     }
 
-    public String printJarInfo(Model m, String fp){
-	System.out.println("Extracting from jar: ");
-	StringBuilder jarInfo = new StringBuilder();
-	Build b = m.getBuild();
+    public String printJarInfo(Model m, String pomPath, LinkedList<String> jarList){
+	System.out.println("Extracting From Pom: " + pomPath);
+	for (int i = 0; i < jarList.size(); i++ ) {
+	    String jarPath = jarList.get(i);
+	    System.out.println("Related jar: "+jarPath);
+	    jarList.set(i, jarPath.substring(jarPath.lastIndexOf('/')+1));
+	}
+	StringBuilder info = new StringBuilder();
+	Organization org = m.getOrganization();
 
-	String finalName = buildGetterWrapper("getFinalName", b);
+	String pomName = pomPath.substring(pomPath.lastIndexOf('/')+1);
+	String artifact = modelGetterWrapper("getArtifactId", m);
+	String version = modelGetterWrapper("getVersion", m);
+	String groupId = modelGetterWrapper("getGroupId", m);
+	String orgName = orgGetterWrapper("getName", org);
+ 
+	info.append(pomName);
+	for (String jar : jarList) { info.append(";"+jar); }
+	info.append(";"+artifact+";"+version+";"+groupId+";"+orgName+"\n");
 
-	return finalName+"\n";
+	return info.toString();
     }
 
-    public String printInfo(Model m, String fp){
-	System.out.println("Extracting From: "+fp);
+    public String printPomInfo(Model m, String pomPath){
+	System.out.println("Extracting From: "+pomPath);
 	StringBuilder pomContents = new StringBuilder();
 
 	String artifact = modelGetterWrapper("getArtifactId", m);
@@ -102,8 +107,8 @@ public class PomParser {
     }
 
     @SuppressWarnings("unchecked")
-    public String printManagedModel(Model m, String fp){
-	System.out.println("Extracting From: "+fp);
+    public String printManagedModel(Model m, String pomPath){
+	System.out.println("Extracting From: "+pomPath);
 	System.out.print("Managed Dependancies: ");
 	StringBuilder pomContents = new StringBuilder();
 				
@@ -130,7 +135,7 @@ public class PomParser {
 				+ dependency.getVersion() +","+modDate+","
 				+ parent+","
 				+ m.getGroupId()+","+m.getArtifactId()+","+m.getVersion()+","
-				+ dependency.getGroupId() + "," + dependency.getScope()+","+fp);
+				+ dependency.getGroupId() + "," + dependency.getScope()+","+pomPath);
 	    pomContents.append("\n");
 			    	
 	}
@@ -139,10 +144,10 @@ public class PomParser {
     }
 		
     @SuppressWarnings("unchecked")
-    public String printDep(Model m, String fp, String art, String artID){
+    public String printDep(Model m, String pomPath, String art, String artID){
 	StringBuilder pomContents = new StringBuilder();
 	final List<Dependency> dependencies = m.getDependencies();
-	System.out.println("Extracting from: "+fp);
+	System.out.println("Extracting from: "+pomPath);
 	System.out.print("Dependencies: ");
 
 	//update counters
@@ -168,7 +173,7 @@ public class PomParser {
 					+ dependency.getVersion() +","+modDate+","
 					+ parent+","
 					+ m.getGroupId()+","+m.getArtifactId()+","+m.getVersion()+","
-					+ dependency.getGroupId() + "," + dependency.getScope()+","+fp);
+					+ dependency.getGroupId() + "," + dependency.getScope()+","+pomPath);
 		    pomContents.append("\n");
 		}
 	    }
@@ -177,10 +182,10 @@ public class PomParser {
 	return pContents;
     }
 	
-    public String printDepAll(Model m, String fp){
+    public String printDepAll(Model m, String pomPath){
 	StringBuilder pomContents = new StringBuilder();
 	final List<Dependency> dependencies = m.getDependencies();
-	System.out.println("Extracting from: "+fp);
+	System.out.println("Extracting from: "+pomPath);
 	System.out.print("Dependencies: ");
 	//update counters
 	if (dependencies.size() == 0){
@@ -210,7 +215,7 @@ public class PomParser {
 				+ dependency.getVersion() +","+modDate+","
 				+ parent+","
 				+ m.getGroupId()+","+m.getArtifactId()+","+m.getVersion()+","
-				+ dependency.getGroupId() +"," + dependency.getScope()+","+fp);
+				+ dependency.getGroupId() +"," + dependency.getScope()+","+pomPath);
 	    pomContents.append("\n");
 		    	
 	}
@@ -238,11 +243,11 @@ public class PomParser {
 
     }
 
-    //Wraps getter functions from maven's Build class to return the fields in a special format.
-    private String buildGetterWrapper(String func, Build b){
+    //Wraps getter functions from maven's Organiztion class to return the fields in a special format.
+    private String orgGetterWrapper(String func, Organization org){
 	try {
-	    Method modelFunc = b.getClass().getMethod(func);
-	    Object value =  modelFunc.invoke(b);
+	    Method modelFunc = org.getClass().getMethod(func);
+	    Object value =  modelFunc.invoke(org);
 	    String field = (String)value;
 	    return field.replace(";","<SEMI>");
 	} catch (ReflectiveOperationException e) { 

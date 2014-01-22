@@ -10,29 +10,6 @@ public class FileScan{
 	indexPath = index;
     }
     
-    public void walkPoms(String path) {
-        ReadWriter wr = new ReadWriter(indexPath);
-        
-    	File root = new File(path);
-        File[] list = root.listFiles();
-
-        if (list == null) return;
-
-	for ( File f : list ) {
-            if ( f.isDirectory() ) {
-                walkPoms( f.getAbsolutePath() );
-            } else {
-            	
-            	String lookFile = f.getAbsoluteFile().toString();
-            	
-            	if (getExtension(lookFile).equalsIgnoreCase("pom")){
-		    File pomF = new File(lookFile);
-		    wr.write(pomF.getAbsolutePath()+"\n");
-            	}
-            }
-        }
-    }
-    
     public void walkPomsAndJars(String path) {
         ReadWriter wr = new ReadWriter(indexPath);
     
@@ -45,16 +22,24 @@ public class FileScan{
             if ( f.isDirectory() ) {
                 walkPomsAndJars( f.getAbsolutePath() );
             } else {
+		StringBuilder paths = new StringBuilder();
 		String lookFile = f.getAbsoluteFile().toString();
-            	if (getExtension(lookFile).equalsIgnoreCase("pom")){
+		String dirPath = lookFile.substring(0, lookFile.lastIndexOf(File.separator));
+
+		if (getExtension(lookFile).equalsIgnoreCase("pom")){
 		    File pomF = new File(lookFile);
-		    File jarF = new File(lookFile.replace(".pom", ".jar"));
-		    if (jarF.exists()) {
-			wr.write(pomF.getAbsolutePath()+","+jarF.getAbsolutePath()+"\n");
-		    } else {
-			wr.write(pomF.getAbsolutePath()+","+"<NOJAR>"+"\n");
-		    }	
-            	}
+		    File currDir = new File(dirPath);
+		    File[] neighbors = currDir.listFiles();
+		    paths.append(pomF.getAbsoluteFile());
+
+		    for( File f2 : neighbors){
+			String checkFile = f2.getAbsoluteFile().toString();
+			if(getExtension(checkFile).equalsIgnoreCase("jar")){
+			    paths.append(","+f2.getAbsolutePath());
+			}
+		    }
+		    wr.write(paths.toString()+"\n");
+		}
             }
         }
     }
