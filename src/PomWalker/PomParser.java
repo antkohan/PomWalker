@@ -79,12 +79,13 @@ public class PomParser {
 	}
 	StringBuilder info = new StringBuilder();
 	Organization org = m.getOrganization();
+	Parent p = m.getParent();
 
 	String pomName = pomPath.substring(pomPath.lastIndexOf('/')+1);
-	String artifact = modelGetterWrapper("getArtifactId", m);
-	String version = modelGetterWrapper("getVersion", m);
-	String groupId = modelGetterWrapper("getGroupId", m);
-	String orgName = orgGetterWrapper("getName", org);
+	String artifact = (getWrap("getArtifactId", m) == "<NONE>") ? getWrap("getArtifactId", p) :  getWrap("getArtifactId", m);
+	String version =  (getWrap("getVersion", m) == "<NONE>") ? getWrap("getVersion", p) :  getWrap("getVersion", m);
+	String groupId =  (getWrap("getGroupId", m) == "<NONE>") ? getWrap("getGroupId", p) :  getWrap("getGroupId", m);
+	String orgName =  getWrap("getName", org);
  
 	info.append(artifact+";"+version+";"+groupId+";"+orgName+";");
 	info.append(pomName);
@@ -98,10 +99,10 @@ public class PomParser {
 	System.out.println("Extracting From: "+pomPath);
 	StringBuilder pomContents = new StringBuilder();
 
-	String artifact = modelGetterWrapper("getArtifactId", m);
-	String version = modelGetterWrapper("getVersion", m);
-	String groupId = modelGetterWrapper("getGroupId", m);
-	String description = modelGetterWrapper("getDescription", m);
+	String artifact = getWrap("getArtifactId", m);
+	String version = getWrap("getVersion", m);
+	String groupId = getWrap("getGroupId", m);
+	String description = getWrap("getDescription", m);
 	
 	pomContents.append(artifact+";"+version+";"+groupId+";"+description+"\n");
 	return pomContents.toString();
@@ -224,8 +225,9 @@ public class PomParser {
 	return pContents;
     }
 
-    //Wraps getter functions from maven's Model class to return the fields in a special format.
-    private String modelGetterWrapper(String func, Model m){
+    //Maven's model getter functions seem to return a null pointer exception if the pom doesn't have that field.
+    //So i'm opting to handle them with these functions.
+    private String getWrap(String func, Model m){
 	try {
 	    Method modelFunc = m.getClass().getMethod(func);
 	    Object value =  modelFunc.invoke(m);
@@ -244,15 +246,32 @@ public class PomParser {
 
     }
 
-    //Wraps getter functions from maven's Organiztion class to return the fields in a special format.
-    private String orgGetterWrapper(String func, Organization org){
+    private String getWrap(String func, Organization org){
 	try {
 	    Method modelFunc = org.getClass().getMethod(func);
 	    Object value =  modelFunc.invoke(org);
 	    String field = (String)value;
 	    return field.replace(";","<SEMI>");
 	} catch (ReflectiveOperationException e) { 
-	    errlog.write("Error in using reflection in model wrapper on function "+func+": "+e+"\n");
+	    errlog.write("Error in using reflection in org wrapper on function "+func+": "+e+"\n");
+	    return "<NONE>";
+	} catch (NullPointerException e) {
+	    //Tried to use replace on a field that had no value. Will be common, so don't write to log
+	    return "<NONE>";
+	} catch (Exception e) {
+	    errlog.write("Error running model wrapper on function "+func+": "+e+"\n");
+	    return "<NONE>";
+	}
+
+    }
+    private String getWrap(String func, Parent p){
+	try {
+	    Method modelFunc = p.getClass().getMethod(func);
+	    Object value =  modelFunc.invoke(p);
+	    String field = (String)value;
+	    return field.replace(";","<SEMI>");
+	} catch (ReflectiveOperationException e) { 
+	    errlog.write("Error in using reflection in parent wrapper on function "+func+": "+e+"\n");
 	    return "<NONE>";
 	} catch (NullPointerException e) {
 	    //Tried to use replace on a field that had no value. Will be common, so don't write to log
