@@ -86,9 +86,10 @@ public class PomParser {
 	String groupId = modelGetterWrapper("getGroupId", m);
 	String orgName = orgGetterWrapper("getName", org);
  
+	info.append(artifact+";"+version+";"+groupId+";"+orgName+";");
 	info.append(pomName);
 	for (String jar : jarList) { info.append(";"+jar); }
-	info.append(";"+artifact+";"+version+";"+groupId+";"+orgName+"\n");
+	info.append("\n");
 
 	return info.toString();
     }
